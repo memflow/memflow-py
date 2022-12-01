@@ -1,6 +1,6 @@
 [project]
 name = "memflow"
-version = "0.1.0"
+version = "0.1.1"
 authors = [{ name = "Dan Killinger", email = "git@dank.anonaddy.com" }]
 description = "Physical memory introspection framework"
 readme = "README.md"
