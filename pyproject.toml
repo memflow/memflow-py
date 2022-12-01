@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = [{ name = "Dan Killinger", email = "git@dank.anonaddy.com" }]
 description = "Physical memory introspection framework"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.6"
 classifiers = [
     "Programming Language :: Rust",
     "License :: OSI Approved :: MIT License",
