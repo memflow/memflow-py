@@ -9,10 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
-      id: python
-      with:
-        python-version: '3.7'
     - uses: PyO3/maturin-action@v1
       with:
         manylinux: auto
@@ -28,10 +24,6 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
-      id: python
-      with:
-        python-version: '3.7'
     - uses: PyO3/maturin-action@v1
       with:
         command: build
@@ -46,10 +38,6 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
-      id: python
-      with:
-        python-version: '3.7'
     - uses: PyO3/maturin-action@v1
       with:
         command: build
