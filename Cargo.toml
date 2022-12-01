@@ -1,0 +1,25 @@
+[package]
+name = "memflow-py"
+version = "0.1.0"
+authors = ["Dan Killinger <git@dank.anonaddy.com>"]
+edition = "2021"
+keywords = ["memflow", "python"]
+description = "Python package for memflow"
+repository = "https://github.com/dankope/memflow-py/"
+license = "MIT"
+
+[lib]
+name = "memflow"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.17", features = ["extension-module", "macros"] }
+memflow = { version = "^0.2.0-beta", features = ["plugins", "dummy_mem"] }
+cglue = "0.2"
+thiserror = "1.0"
+indexmap = "1.9"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+opt-level = 3

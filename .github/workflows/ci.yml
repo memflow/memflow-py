@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  PACKAGE_NAME: memflow
+
+jobs:
+  python:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.7", "3.8", "3.9", "3.10"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v4
+        id: python
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          args: --release --no-sdist -o dist --interpreter=${{ steps.python.outputs.python-path }}
+      - name: Install built package
+        run: pip install ${{ env.PACKAGE_NAME }} --no-index --find-links dist --force-reinstall
+      - name: Install dev dependencies
+        run: pip install '.[dev]'
+      - name: Run tests
+        run: pytest --verbose
+      - name: black
+        run: black --check tests/ python/ examples/
+
+  rust:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v1
+        with:
+          path: $HOME/.cargo
+          key: cargo-${{ hashFiles('Cargo.lock') }}
+      - name: Install rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - name: Run clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features
+      - name: Check format
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
