@@ -26,7 +26,7 @@ jobs:
       - uses: PyO3/maturin-action@v1
         with:
           command: build
-          args: --release --no-sdist -o dist --interpreter=${{ steps.python.outputs.python-path }}
+          args: --release -o dist --interpreter=${{ steps.python.outputs.python-path }}
       - name: Install built package
         run: pip install ${{ env.PACKAGE_NAME }} --no-index --find-links dist --force-reinstall
       - name: Install dev dependencies
