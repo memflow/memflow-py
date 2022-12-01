@@ -10,13 +10,14 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
+      id: python
       with:
         python-version: '3.7'
     - uses: PyO3/maturin-action@v1
       with:
         manylinux: auto
         command: build
-        args: --release -o dist
+        args: --release -o dist --interpreter=${{ steps.python.outputs.python-path }}
     - name: Upload wheels
       uses: actions/upload-artifact@v3
       with:
@@ -28,12 +29,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
+      id: python
       with:
         python-version: '3.7'
     - uses: PyO3/maturin-action@v1
       with:
         command: build
-        args: --release -o dist
+        args: --release -o dist --interpreter=${{ steps.python.outputs.python-path }}
     - name: Upload wheels
       uses: actions/upload-artifact@v3
       with:
@@ -45,12 +47,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
+      id: python
       with:
         python-version: '3.7'
     - uses: PyO3/maturin-action@v1
       with:
         command: build
-        args: --release -o dist --universal2
+        args: --release -o dist --universal2 --interpreter=${{ steps.python.outputs.python-path }}
     - name: Upload wheels
       uses: actions/upload-artifact@v3
       with:
