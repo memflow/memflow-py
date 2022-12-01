@@ -17,7 +17,7 @@ jobs:
       with:
         manylinux: auto
         command: build
-        args: --release -o dist --interpreter=${{ steps.python.outputs.python-path }}
+        args: --release -o dist -i 3.9
     - name: Upload wheels
       uses: actions/upload-artifact@v3
       with:
@@ -35,7 +35,7 @@ jobs:
     - uses: PyO3/maturin-action@v1
       with:
         command: build
-        args: --release -o dist --interpreter=${{ steps.python.outputs.python-path }}
+        args: --release -o dist -i 3.9
     - name: Upload wheels
       uses: actions/upload-artifact@v3
       with:
@@ -53,7 +53,7 @@ jobs:
     - uses: PyO3/maturin-action@v1
       with:
         command: build
-        args: --release -o dist --universal2 --interpreter=${{ steps.python.outputs.python-path }}
+        args: --release -o dist --universal2 -i 3.9
     - name: Upload wheels
       uses: actions/upload-artifact@v3
       with:
