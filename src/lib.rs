@@ -41,6 +41,7 @@ impl From<MemflowPyError> for PyErr {
 #[pymodule]
 #[pyo3(name = "memflow")]
 fn memflow_py(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
+    pyo3_log::init();
     dummy::register_dummy_module(_py, m)?;
     m.add_class::<inventory::PyInventory>()?;
     m.add_class::<process::PyProcess>()?;

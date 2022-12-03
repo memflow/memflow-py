@@ -1,5 +1,6 @@
 from memflow import *
 from ctypes import *
+import logging
 
 
 class COFFHeader(Structure):
@@ -12,6 +13,11 @@ class COFFHeader(Structure):
     def __str__(self):
         return f"{self.sections}, {self.timestamp}"
 
+
+# Setup logging
+FORMAT = "%(levelname)s %(name)s %(asctime)-15s %(filename)s:%(lineno)d %(message)s"
+logging.basicConfig(format=FORMAT)
+logging.getLogger().setLevel(logging.INFO)
 
 inventory = Inventory()
 os = inventory.os("native")
