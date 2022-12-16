@@ -1,5 +1,5 @@
-use memflow::prelude::Inventory;
-use pyo3::{prelude::*, types::PyTuple};
+use memflow::prelude::{ConnectorArgs, Inventory, OsArgs};
+use pyo3::prelude::*;
 
 use crate::{connector::PyConnector, os::PyOs, MemflowPyError};
 
@@ -9,32 +9,36 @@ pub struct PyInventory(Inventory);
 #[pymethods]
 impl PyInventory {
     #[new]
-    #[args(py_args = "*")]
-    fn new(py_args: &PyTuple) -> PyResult<Self> {
-        if !py_args.is_empty() {
-            Ok(Self(
-                Inventory::scan_path(py_args.get_item(0)?.extract::<&str>()?)
-                    .map_err(MemflowPyError::Memflow)?,
-            ))
-        } else {
-            Ok(Self(Inventory::scan()))
-        }
+    fn new(path: Option<&str>) -> PyResult<Self> {
+        let inventory = match path {
+            Some(path) => Inventory::scan_path(path).map_err(MemflowPyError::Memflow)?,
+            None => Inventory::scan(),
+        };
+
+        Ok(Self(inventory))
     }
 
-    fn connector(&self, name: &str) -> PyResult<PyConnector> {
-        // TODO: Add support for connector args.
+    fn connector(&self, name: &str, args: Option<&str>) -> PyResult<PyConnector> {
         Ok(PyConnector::new(
             self.0
-                .create_connector(name, None, None)
+                .create_connector(
+                    name,
+                    None,
+                    args.and_then(|a| str::parse::<ConnectorArgs>(&a).ok())
+                        .as_ref(),
+                )
                 .map_err(MemflowPyError::Memflow)?,
         ))
     }
 
-    fn os(&self, name: &str, connector: Option<PyConnector>) -> PyResult<PyOs> {
-        // TODO: Add support for os args.
+    fn os(&self, name: &str, connector: Option<PyConnector>, args: Option<&str>) -> PyResult<PyOs> {
         Ok(self
             .0
-            .create_os(name, connector.map(|c| c.into()), None)
+            .create_os(
+                name,
+                connector.map(|c| c.into()),
+                args.and_then(|a| str::parse::<OsArgs>(&a).ok()).as_ref(),
+            )
             .map_err(MemflowPyError::Memflow)?
             .into())
     }
