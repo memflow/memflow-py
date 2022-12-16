@@ -1,6 +1,6 @@
 use std::array::TryFromSliceError;
 
-use pyo3::prelude::*;
+use pyo3::{exceptions::PyException, prelude::*};
 use thiserror::Error;
 
 pub(crate) mod connector;
@@ -14,15 +14,15 @@ pub type Result<T> = std::result::Result<T, MemflowPyError>;
 
 #[derive(Error, Debug)]
 pub enum MemflowPyError {
-    #[error("memflow error")]
+    #[error(transparent)]
     Memflow(#[from] memflow::error::Error),
-    #[error("python error")]
+    #[error(transparent)]
     Python(#[from] PyErr),
     #[error("the python type `{0}` is not a valid type")]
     InvalidType(String),
     #[error("no python type found for `{0}`")]
     NoType(String),
-    #[error("byte cast error")]
+    #[error(transparent)]
     ByteCast(#[from] TryFromSliceError),
     #[error("Python object missing attribute `{0}`")]
     MissingAttribute(String),
@@ -32,8 +32,7 @@ impl From<MemflowPyError> for PyErr {
     fn from(err: MemflowPyError) -> Self {
         match err {
             MemflowPyError::Python(e) => e,
-            // TODO: These dont seem to be going through.
-            _ => err.into(),
+            _ => PyException::new_err(err.to_string()),
         }
     }
 }
