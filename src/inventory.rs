@@ -24,7 +24,7 @@ impl PyInventory {
                 .create_connector(
                     name,
                     None,
-                    args.and_then(|a| str::parse::<ConnectorArgs>(&a).ok())
+                    args.and_then(|a| str::parse::<ConnectorArgs>(a).ok())
                         .as_ref(),
                 )
                 .map_err(MemflowPyError::Memflow)?,
@@ -37,7 +37,7 @@ impl PyInventory {
             .create_os(
                 name,
                 connector.map(|c| c.into()),
-                args.and_then(|a| str::parse::<OsArgs>(&a).ok()).as_ref(),
+                args.and_then(|a| str::parse::<OsArgs>(a).ok()).as_ref(),
             )
             .map_err(MemflowPyError::Memflow)?
             .into())
