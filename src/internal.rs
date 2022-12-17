@@ -104,7 +104,6 @@ impl InternalDT {
 
     pub fn py_to_bytes(&self, obj: PyObject) -> crate::Result<Vec<u8>> {
         Python::with_gil(|py| match self {
-            // TODO: Test `Char`.
             InternalDT::Char => Ok(PyBytes::try_from_exact(obj.as_ref(py))
                 .unwrap()
                 .as_bytes()
@@ -194,7 +193,7 @@ impl TryFrom<PyObject> for InternalDT {
                     "c_double" => Self::Double,
                     "c_longdouble" => Self::LongDouble,
                     "c_float" => Self::Float,
-                    "c_int8" => Self::Int8,
+                    "c_int8" | "c_byte" => Self::Int8,
                     "c_int16" | "c_short" => Self::Int16,
                     "c_int32" | "c_long" | "c_int" => Self::Int32,
                     "c_int64" | "c_longlong" => Self::Int64,
@@ -204,7 +203,7 @@ impl TryFrom<PyObject> for InternalDT {
                     "c_uint64" | "c_ulonglong" => Self::UInt64,
                     "c_wchar" => Self::WideChar,
                     "c_wchar_p" => todo!("add c_wchar_p support"),
-                    _ => unreachable!("unknown SimpleCData type!"),
+                    name => unreachable!("unknown SimpleCData type: {}", name),
                 };
                 Ok(dt)
             }
