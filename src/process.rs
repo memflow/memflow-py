@@ -41,7 +41,7 @@ impl PyProcess {
     }
 
     fn write(&mut self, addr: umem, ty: PyObject, value: PyObject) -> PyResult<()> {
-        let dt: InternalDT = ty.try_into().unwrap(); // TODO: Why does ? not get a valid error propagated!!!
+        let dt: InternalDT = ty.try_into()?;
 
         self.0
             .write_raw(addr.into(), &dt.py_to_bytes(value)?)
