@@ -1,6 +1,6 @@
 use memflow::{
     os::{process::Pid, OsInner},
-    prelude::{OsInstanceArcBox, PhysicalMemory},
+    prelude::{MemoryView, OsInstanceArcBox, PhysicalMemory},
     types::umem,
 };
 use pyo3::{exceptions::PyException, prelude::*};
@@ -49,6 +49,54 @@ impl PyOs {
     pub fn process_from_name(&mut self, name: &str) -> PyResult<PyProcess> {
         let t = self.0.borrow_mut().clone();
         Ok(PyProcess::new(t.into_process_by_name(name).unwrap()))
+    }
+
+    fn read(&mut self, addr: umem, ty: PyObject) -> PyResult<PyObject> {
+        let dt: InternalDT = ty.try_into()?;
+
+        let bytes = self
+            .0
+            .borrow_mut()
+            .as_mut_impl_memoryview()
+            .ok_or_else(|| {
+                MemflowPyError::MissingCGlueImpl("Os".to_owned(), "MemoryView".to_owned())
+            })?
+            .read_raw(addr.into(), dt.size())
+            .map_err(|e| PyException::new_err(format!("failed to read bytes {}", e)))?;
+
+        Ok(dt.py_from_bytes(bytes)?)
+    }
+
+    fn read_ptr(&mut self, ptr_inst: PyObject) -> PyResult<PyObject> {
+        let addr: umem = Python::with_gil(|py| ptr_inst.getattr(py, "addr")?.extract(py))?;
+        let dt: InternalDT = Python::with_gil(|py| ptr_inst.getattr(py, "_type_")?.try_into())?;
+
+        let bytes = self
+            .0
+            .borrow_mut()
+            .as_mut_impl_memoryview()
+            .ok_or_else(|| {
+                MemflowPyError::MissingCGlueImpl("Os".to_owned(), "MemoryView".to_owned())
+            })?
+            .read_raw(addr.into(), dt.size())
+            .map_err(|e| PyException::new_err(format!("failed to read bytes {}", e)))?;
+
+        Ok(dt.py_from_bytes(bytes)?)
+    }
+
+    fn write(&mut self, addr: umem, ty: PyObject, value: PyObject) -> PyResult<()> {
+        let dt: InternalDT = ty.try_into()?;
+
+        self.0
+            .borrow_mut()
+            .as_mut_impl_memoryview()
+            .ok_or_else(|| {
+                MemflowPyError::MissingCGlueImpl("Os".to_owned(), "MemoryView".to_owned())
+            })?
+            .write_raw(addr.into(), &dt.py_to_bytes(value)?)
+            .map_err(|e| PyException::new_err(format!("failed to write bytes {}", e)))?;
+
+        Ok(())
     }
 
     fn phys_read(&mut self, addr: umem, ty: PyObject) -> PyResult<PyObject> {
