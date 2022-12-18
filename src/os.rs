@@ -1,13 +1,16 @@
 use memflow::{
     os::{process::Pid, OsInner},
-    prelude::OsInstanceArcBox,
+    prelude::{OsInstanceArcBox, PhysicalMemory},
     types::umem,
 };
-use pyo3::prelude::*;
+use pyo3::{exceptions::PyException, prelude::*};
 use std::cell::RefCell;
 
-use crate::process::{PyProcess, PyProcessInfo};
-use crate::MemflowPyError;
+use crate::{
+    internal::InternalDT,
+    process::{PyProcess, PyProcessInfo},
+    MemflowPyError,
+};
 
 #[derive(Clone)]
 #[pyclass(name = "Os")]
@@ -46,6 +49,54 @@ impl PyOs {
     pub fn process_from_name(&mut self, name: &str) -> PyResult<PyProcess> {
         let t = self.0.borrow_mut().clone();
         Ok(PyProcess::new(t.into_process_by_name(name).unwrap()))
+    }
+
+    fn phys_read(&mut self, addr: umem, ty: PyObject) -> PyResult<PyObject> {
+        let dt: InternalDT = ty.try_into()?;
+        let mut raw: Vec<u8> = vec![0; dt.size()];
+
+        self.0
+            .borrow_mut()
+            .as_mut_impl_physicalmemory()
+            .ok_or_else(|| {
+                MemflowPyError::MissingCGlueImpl("Os".to_owned(), "PhysicalMemory".to_owned())
+            })?
+            .phys_read_into(addr.into(), raw.as_mut_slice())
+            .map_err(|e| PyException::new_err(format!("failed to read bytes {}", e)))?;
+
+        Ok(dt.py_from_bytes(raw)?)
+    }
+
+    fn phys_read_ptr(&mut self, ptr_inst: PyObject) -> PyResult<PyObject> {
+        let addr: umem = Python::with_gil(|py| ptr_inst.getattr(py, "addr")?.extract(py))?;
+        let dt: InternalDT = Python::with_gil(|py| ptr_inst.getattr(py, "_type_")?.try_into())?;
+        let mut raw: Vec<u8> = vec![0; dt.size()];
+
+        self.0
+            .borrow_mut()
+            .as_mut_impl_physicalmemory()
+            .ok_or_else(|| {
+                MemflowPyError::MissingCGlueImpl("Os".to_owned(), "PhysicalMemory".to_owned())
+            })?
+            .phys_read_into(addr.into(), raw.as_mut_slice())
+            .map_err(|e| PyException::new_err(format!("failed to read bytes {}", e)))?;
+
+        Ok(dt.py_from_bytes(raw)?)
+    }
+
+    fn phys_write(&mut self, addr: umem, ty: PyObject, value: PyObject) -> PyResult<()> {
+        let dt: InternalDT = ty.try_into()?;
+
+        self.0
+            .borrow_mut()
+            .as_mut_impl_physicalmemory()
+            .ok_or_else(|| {
+                MemflowPyError::MissingCGlueImpl("Os".to_owned(), "PhysicalMemory".to_owned())
+            })?
+            .phys_write(addr.into(), dt.py_to_bytes(value)?.as_mut_slice())
+            .map_err(|e| PyException::new_err(format!("failed to write bytes {}", e)))?;
+
+        Ok(())
     }
 }
 
