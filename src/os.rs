@@ -18,6 +18,21 @@ pub struct PyOs(RefCell<OsInstanceArcBox<'static>>);
 
 #[pymethods]
 impl PyOs {
+    #[getter]
+    fn arch(&mut self) -> String {
+        self.0.borrow_mut().info().arch.to_string()
+    }
+
+    #[getter]
+    fn base(&mut self) -> umem {
+        self.0.borrow_mut().info().base.to_umem()
+    }
+
+    #[getter]
+    fn size(&mut self) -> u64 {
+        self.0.borrow_mut().info().size
+    }
+
     pub fn process_info_list(&mut self) -> PyResult<Vec<PyProcessInfo>> {
         Ok(self
             .0

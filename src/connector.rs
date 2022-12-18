@@ -18,6 +18,26 @@ impl PyConnector {
 
 #[pymethods]
 impl PyConnector {
+    #[getter]
+    fn max_address(&mut self) -> umem {
+        self.0.metadata().max_address.to_umem()
+    }
+
+    #[getter]
+    fn real_size(&mut self) -> umem {
+        self.0.metadata().real_size
+    }
+
+    #[getter]
+    fn readonly(&mut self) -> bool {
+        self.0.metadata().readonly
+    }
+
+    #[getter]
+    fn ideal_batch_size(&mut self) -> u32 {
+        self.0.metadata().ideal_batch_size
+    }
+
     fn phys_read(&mut self, addr: umem, ty: PyObject) -> PyResult<PyObject> {
         let dt: InternalDT = ty.try_into()?;
         let mut raw: Vec<u8> = vec![0; dt.size()];
