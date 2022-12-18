@@ -7,6 +7,28 @@
 1. Install python package: `pip install memflow`
 2. Install appropriate memflow components (see [memflowup]).
 
+## Building from source
+
+### Prerequisites
+
+- Rust ([Compilation support](https://github.com/memflow/memflow#compilation-support))
+- Python (3.7 and up)
+
+### Advisory warning
+
+It is advised to build in a [python virtual environment](https://docs.python.org/3/tutorial/venv.html), so that you do not accidentally break anything that depends on this package.
+
+### Steps
+
+1. Fetch repository: `git clone https://github.com/memflow/memflow-py`
+2. Install maturin package: `pip install maturin`
+3. Install dev packages: `pip install '.[dev]'`
+4. Build wheels and install package: `maturin develop`
+5. Repeat step 4 when you make changes to source.
+6. Test your changes: `python -m pytest`
+
+For more information on building please see [Maturin].
+
 ## Example
 
 ```py
@@ -15,8 +37,8 @@ from ctypes import *
 
 class COFFHeader(Structure):
     _fields_ = [
-        ("_pad0x0", c_uint8 * 6),
-        ("sections", c_uint16),
+        ("_pad0x0", c_byte * 6),
+        ("sections", c_short),
         ("timestamp", c_uint32),
     ]
 
@@ -35,3 +57,4 @@ print(header)
 [memflowup]: https://github.com/memflow/memflowup
 [Rust]: https://rust-lang.org/
 [Python]: https://python.org/
+[Maturin]: https://github.com/PyO3/maturin
