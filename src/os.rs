@@ -8,7 +8,7 @@ use std::cell::RefCell;
 
 use crate::{
     internal::InternalDT,
-    process::{PyProcess, PyProcessInfo},
+    process::{PyModuleInfo, PyProcess, PyProcessInfo},
     MemflowPyError,
 };
 
@@ -49,6 +49,26 @@ impl PyOs {
     pub fn process_from_name(&mut self, name: &str) -> PyResult<PyProcess> {
         let t = self.0.borrow_mut().clone();
         Ok(PyProcess::new(t.into_process_by_name(name).unwrap()))
+    }
+
+    fn module_info_list(&mut self) -> PyResult<Vec<PyModuleInfo>> {
+        Ok(self
+            .0
+            .borrow_mut()
+            .module_list()
+            .map_err(MemflowPyError::Memflow)?
+            .into_iter()
+            .map(PyModuleInfo::from)
+            .collect())
+    }
+
+    fn module_from_name(&mut self, name: &str) -> PyResult<PyModuleInfo> {
+        Ok(self
+            .0
+            .borrow_mut()
+            .module_by_name(name)
+            .map_err(MemflowPyError::Memflow)?
+            .into())
     }
 
     fn read(&mut self, addr: umem, ty: PyObject) -> PyResult<PyObject> {
