@@ -72,6 +72,12 @@ impl PyConnector {
     }
 }
 
+impl From<ConnectorInstanceArcBox<'static>> for PyConnector {
+    fn from(inst: ConnectorInstanceArcBox<'static>) -> Self {
+        Self(inst)
+    }
+}
+
 impl From<PyConnector> for ConnectorInstanceArcBox<'static> {
     fn from(value: PyConnector) -> Self {
         value.0

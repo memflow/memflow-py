@@ -1,7 +1,7 @@
 /target
-/Cargo.lock
 .env
 /env
 /.pytest_cache
 /**/__pycache__
 /**/*.pyd
+.ipynb_checkpoints

@@ -188,3 +188,9 @@ impl From<OsInstanceArcBox<'static>> for PyOs {
         Self(RefCell::new(inst))
     }
 }
+
+impl From<PyOs> for OsInstanceArcBox<'static> {
+    fn from(value: PyOs) -> Self {
+        value.0.into_inner()
+    }
+}

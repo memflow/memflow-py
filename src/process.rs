@@ -69,8 +69,7 @@ impl PyProcess {
     }
 
     fn __str__(&self) -> String {
-        let info = self.0.info();
-        format!("{} ({})", info.name, info.pid)
+        format!("{:?}", self.0.info())
     }
 }
 
@@ -96,7 +95,7 @@ impl PyProcessInfo {
     }
 
     fn __str__(&self) -> String {
-        format!("{} ({}) @ {:#04x}", self.name(), self.pid(), self.address())
+        format!("{:?}", self.0)
     }
 }
 
@@ -144,7 +143,7 @@ impl PyModuleInfo {
     }
 
     fn __str__(&self) -> String {
-        format!("{} @ {:#04x}", self.name(), self.base())
+        format!("{:?}", self.0)
     }
 }
 
