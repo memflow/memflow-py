@@ -16,7 +16,7 @@ class TEST(Structure):
         return f"TEST = {self.one}, {self.two}, {self.ptr}"
 
 
-def test_ghetto():
+def test_basic():
     my_os = dummy.os()
     proc_info = my_os.process_info_list()[0]
     proc = my_os.process_from_info(proc_info)
