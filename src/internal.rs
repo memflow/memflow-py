@@ -252,7 +252,7 @@ impl TryFrom<PyObject> for InternalDT {
                         let field_name = it.next().unwrap().to_string();
                         let field_type: InternalDT = it
                             .next()
-                            .ok_or(MemflowPyError::NoType(field_name.clone()))?
+                            .ok_or_else(|| MemflowPyError::NoType(field_name.clone()))?
                             .try_into()?;
                         Ok((field_name, field_type))
                     })
