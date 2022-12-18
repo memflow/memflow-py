@@ -18,10 +18,17 @@ impl PyInventory {
         Ok(Self(inventory))
     }
 
-    fn add_dir(&mut self, path: &str) -> PyResult<()> {
-        self.0
-            .add_dir(path.into())
-            .map_err(MemflowPyError::Memflow)?;
+    fn add_dir(&mut self, path: &str, filter: Option<&str>) -> PyResult<()> {
+        match filter {
+            Some(filter) => self
+                .0
+                .add_dir_filtered(path.into(), filter)
+                .map_err(MemflowPyError::Memflow)?,
+            None => self
+                .0
+                .add_dir(path.into())
+                .map_err(MemflowPyError::Memflow)?,
+        };
 
         Ok(())
     }
