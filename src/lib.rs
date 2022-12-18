@@ -26,6 +26,8 @@ pub enum MemflowPyError {
     ByteCast(#[from] TryFromSliceError),
     #[error("Python object missing attribute `{0}`")]
     MissingAttribute(String),
+    #[error("The cglue object `{0}` is missing impl for `{1}`")]
+    MissingCGlueImpl(String, String),
 }
 
 impl From<MemflowPyError> for PyErr {
