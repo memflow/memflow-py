@@ -71,6 +71,10 @@ impl PyProcess {
     fn __str__(&self) -> String {
         format!("{:?}", self.0.info())
     }
+
+    fn __repr__(&self) -> String {
+        format!("{:?}", self.0.info())
+    }
 }
 
 #[derive(Clone)]
@@ -95,6 +99,10 @@ impl PyProcessInfo {
     }
 
     fn __str__(&self) -> String {
+        format!("{:?}", self.0)
+    }
+
+    fn __repr__(&self) -> String {
         format!("{:?}", self.0)
     }
 }
@@ -143,6 +151,10 @@ impl PyModuleInfo {
     }
 
     fn __str__(&self) -> String {
+        format!("{:?}", self.0)
+    }
+
+    fn __repr__(&self) -> String {
         format!("{:?}", self.0)
     }
 }
