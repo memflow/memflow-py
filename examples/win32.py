@@ -20,7 +20,7 @@ logging.basicConfig(format=FORMAT)
 logging.getLogger().setLevel(logging.INFO)
 
 inventory = Inventory()
-os = inventory.os("native")
+os = inventory.create_os("native")
 process = os.process_from_name("CalculatorApp.exe")
 module = process.module_from_name("CalculatorApp.dll")
 header = process.read(module.base + 0x40, COFFHeader)
