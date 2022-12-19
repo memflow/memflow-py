@@ -28,6 +28,8 @@ pub enum MemflowPyError {
     MissingAttribute(String),
     #[error("The cglue object `{0}` is missing impl for `{1}`")]
     MissingCGlueImpl(String, String),
+    #[error("The arch {0} is not valid")]
+    InvalidArch(String),
 }
 
 impl From<MemflowPyError> for PyErr {
@@ -48,6 +50,8 @@ fn memflow_py(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_class::<process::PyProcess>()?;
     m.add_class::<process::PyProcessInfo>()?;
     m.add_class::<process::PyModuleInfo>()?;
+    m.add_class::<process::PyArchitectureIdent>()?;
+    m.add_class::<process::PyProcessState>()?;
     m.add_class::<os::PyOs>()?;
     m.add_class::<process::PyProcess>()?;
     Ok(())
