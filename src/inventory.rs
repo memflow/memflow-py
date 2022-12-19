@@ -165,6 +165,10 @@ impl PyTargetInfo {
     fn __str__(&self) -> String {
         format!("{:?}", self.0)
     }
+
+    fn __repr__(&self) -> String {
+        format!("{:?}", self.0)
+    }
 }
 
 impl From<TargetInfo> for PyTargetInfo {
