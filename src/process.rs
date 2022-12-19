@@ -60,7 +60,7 @@ impl PyProcess {
             .collect())
     }
 
-    fn module_from_name(&mut self, name: &str) -> PyResult<PyModuleInfo> {
+    fn module_by_name(&mut self, name: &str) -> PyResult<PyModuleInfo> {
         Ok(self
             .0
             .module_by_name(name)
