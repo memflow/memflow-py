@@ -47,6 +47,7 @@ fn memflow_py(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_class::<inventory::PyInventory>()?;
     m.add_class::<process::PyProcess>()?;
     m.add_class::<process::PyProcessInfo>()?;
+    m.add_class::<process::PyModuleInfo>()?;
     m.add_class::<os::PyOs>()?;
     m.add_class::<process::PyProcess>()?;
     Ok(())
