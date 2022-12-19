@@ -359,6 +359,18 @@ impl PyProcessState {
         Self(state)
     }
 
+    fn is_alive(&self) -> bool {
+        self.0.is_alive()
+    }
+
+    fn is_dead(&self) -> bool {
+        self.0.is_dead()
+    }
+
+    fn is_unknown(&self) -> bool {
+        self.0.is_unknown()
+    }
+
     fn __repr__(&self) -> String {
         match self.0 {
             ProcessState::Unknown => "ProcessState(alive=False)".to_owned(),
