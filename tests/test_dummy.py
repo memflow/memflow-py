@@ -22,13 +22,13 @@ def test_basic():
     proc = my_os.process_from_info(proc_info)
 
     # Test writing new `TEST` structure.
-    test_struct = TEST((1, 2), 2, POINTER64(POINT)(proc_info.address + 0x7777))
+    test_struct = TEST((1, 2), -2, POINTER64(POINT)(proc_info.address + 0x7777))
     proc.write(proc_info.address, TEST, test_struct)
     proc.write(proc_info.address + 0x7777, POINT, POINT(55, 3.14))
 
     # Test reading a structure.
     test_works = proc.read(proc_info.address, TEST)
-    assert test_works.two == 2
+    assert test_works.two == -2
 
     # Test reading through a pointer.
     point_works = proc.read_ptr(test_works.ptr)
