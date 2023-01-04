@@ -11,36 +11,36 @@ use crate::MemflowPyError;
 /// Please stick to explicit widths, no c_int nonsense!
 #[derive(Clone, Debug)]
 pub enum InternalDT {
-    /// Represents the C signed char datatype, and interprets the value as small integer. The constructor accepts an optional integer initializer; no overflow checking is done.
+    /// Represents the C signed char datatype, and interprets the value as small integer.
     Byte,
-    /// Represents the C unsigned char datatype, it interprets the value as small integer. The constructor accepts an optional integer initializer; no overflow checking is done.
+    /// Represents the C unsigned char datatype, it interprets the value as small integer.
     UByte,
-    /// Represents the C char datatype, and interprets the value as a single character. The constructor accepts an optional string initializer, the length of the string must be exactly one character.
+    /// Represents the C char datatype, and interprets the value as a single character.
     Char,
-    /// Represents the C wchar_t datatype, and interprets the value as a single character unicode string. The constructor accepts an optional string initializer, the length of the string must be exactly one character.
+    /// Represents the C wchar_t datatype, and interprets the value as a single character unicode string.
     WideChar,
-    /// Represents the C double datatype. The constructor accepts an optional float initializer.
+    /// Represents the C double datatype.
     Double,
-    /// Represents the C long double datatype. The constructor accepts an optional float initializer. On platforms where sizeof(long double) == sizeof(double) it is an alias to c_double.
+    /// Represents the C long double datatype. On platforms where sizeof(long double) == sizeof(double) it is an alias to c_double.
     /// For more info see: https://github.com/rust-lang/rust-bindgen/issues/1549
     LongDouble,
-    /// Represents the C float datatype. The constructor accepts an optional float initializer.
+    /// Represents the C float datatype.
     Float,
-    /// Represents the C signed short datatype. The constructor accepts an optional integer initializer; no overflow checking is done.
+    /// Represents the C signed short datatype. no overflow checking is done.
     Short,
-    /// Represents the C unsigned short datatype. The constructor accepts an optional integer initializer; no overflow checking is done.
+    /// Represents the C unsigned short datatype. no overflow checking is done.
     UShort,
-    /// Represents the C signed int datatype. The constructor accepts an optional integer initializer; no overflow checking is done. On platforms where sizeof(int) == sizeof(long) it is an alias to c_long.
+    /// Represents the C signed int datatype. no overflow checking is done. On platforms where sizeof(int) == sizeof(long) it is an alias to c_long.
     Int,
-    /// Represents the C unsigned int datatype. The constructor accepts an optional integer initializer; no overflow checking is done. On platforms where sizeof(int) == sizeof(long) it is an alias for c_ulong.
+    /// Represents the C unsigned int datatype. no overflow checking is done. On platforms where sizeof(int) == sizeof(long) it is an alias for c_ulong.
     UInt,
-    /// Represents the C signed long datatype. The constructor accepts an optional integer initializer; no overflow checking is done.
+    /// Represents the C signed long datatype.
     Long,
-    /// Represents the C unsigned long datatype. The constructor accepts an optional integer initializer; no overflow checking is done.
+    /// Represents the C unsigned long datatype.
     ULong,
-    /// Represents the C signed long long datatype. The constructor accepts an optional integer initializer; no overflow checking is done.
+    /// Represents the C signed long long datatype.
     LongLong,
-    /// Represents the C unsigned long long datatype. The constructor accepts an optional integer initializer; no overflow checking is done.
+    /// Represents the C unsigned long long datatype.
     ULongLong,
     /// Native pointer type.
     Pointer(PyObject),
