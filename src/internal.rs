@@ -42,12 +42,8 @@ pub enum InternalDT {
     LongLong,
     /// Represents the C unsigned long long datatype.
     ULongLong,
-    /// Native pointer type.
-    Pointer(PyObject),
-    /// Backed by the python function `POINTER32`.
-    Pointer32(PyObject),
-    /// Backed by the python function `POINTER64`.
-    Pointer64(PyObject),
+    /// Native pointer type, backed by `MF_Pointer`.
+    Pointer(PyObject, u32),
     // Backed by the ctypes (ctype * size) syntax.
     Array(PyObject, Box<InternalDT>, u32),
     /// Any python class with a ctypes _fields_ attribute.
@@ -76,14 +72,8 @@ impl InternalDT {
             InternalDT::ULongLong => {
                 Ok(c_ulonglong::from_le_bytes(bytes[..].try_into()?).to_object(py))
             }
-            InternalDT::Pointer(_) => {
-                todo!("Need to store address in an attribute to access later")
-            }
-            InternalDT::Pointer32(class) => {
-                Ok(class.call1(py, (u32::from_le_bytes(bytes[..].try_into()?),))?)
-            }
-            InternalDT::Pointer64(class) => {
-                Ok(class.call1(py, (u64::from_le_bytes(bytes[..].try_into()?),))?)
+            InternalDT::Pointer(class, _) => {
+                Ok(class.call1(py, (umem::from_le_bytes(bytes[..self.size()].try_into()?),))?)
             }
             InternalDT::Array(class, dt, _) => Ok(class.call1(
                 py,
@@ -131,16 +121,10 @@ impl InternalDT {
             InternalDT::ULong => Ok(obj.extract::<c_ulong>(py)?.to_le_bytes().to_vec()),
             InternalDT::LongLong => Ok(obj.extract::<c_longlong>(py)?.to_le_bytes().to_vec()),
             InternalDT::ULongLong => Ok(obj.extract::<c_ulonglong>(py)?.to_le_bytes().to_vec()),
-            InternalDT::Pointer(_) => todo!(),
-            InternalDT::Pointer32(_) => Ok(obj
+            InternalDT::Pointer(_, _) => Ok(obj
                 .getattr(py, "addr")?
                 .extract::<umem>(py)?
-                .to_le_bytes()
-                .to_vec()),
-            InternalDT::Pointer64(_) => Ok(obj
-                .getattr(py, "addr")?
-                .extract::<umem>(py)?
-                .to_le_bytes()
+                .to_le_bytes()[..self.size()]
                 .to_vec()),
             InternalDT::Array(_, dt, len) => {
                 let mut bytes = Vec::new();
@@ -185,9 +169,7 @@ impl InternalDT {
             InternalDT::ULong => size_of::<c_ulong>(),
             InternalDT::LongLong => size_of::<c_longlong>(),
             InternalDT::ULongLong => size_of::<c_ulonglong>(),
-            InternalDT::Pointer32(_) => 4,
-            InternalDT::Pointer64(_) => 8,
-            InternalDT::Pointer(_) => size_of::<usize>(),
+            InternalDT::Pointer(_, byteness) => *byteness as usize,
             InternalDT::Array(_, dt, len) => dt.size() * (*len as usize),
             InternalDT::Structure(_, dts) => {
                 let (_, max_dt) = dts
@@ -236,9 +218,11 @@ impl TryFrom<PyObject> for InternalDT {
                 };
                 Ok(dt)
             }
-            "_Pointer" => Ok(InternalDT::Pointer(value)),
-            "Pointer32" => Ok(InternalDT::Pointer32(value)),
-            "Pointer64" => Ok(InternalDT::Pointer64(value)),
+            "MFPointer" => {
+                let byteness: u32 =
+                    Python::with_gil(|py| value.getattr(py, "_byteness_")?.extract(py))?;
+                Ok(Self::Pointer(value, byteness))
+            }
             "Array" => {
                 let (len, ty_obj) = Python::with_gil::<_, crate::Result<(u32, PyObject)>>(|py| {
                     Ok((
