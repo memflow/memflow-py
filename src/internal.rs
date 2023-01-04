@@ -4,7 +4,7 @@ use std::mem::size_of;
 use indexmap::IndexMap;
 use memflow::types::umem;
 use pyo3::prelude::*;
-use pyo3::types::{PyBytes, PyTuple};
+use pyo3::types::PyTuple;
 
 use crate::MemflowPyError;
 
@@ -51,11 +51,11 @@ pub enum InternalDT {
     // Backed by the ctypes (ctype * size) syntax.
     Array(PyObject, Box<InternalDT>, u32),
     /// Any python class with a ctypes _fields_ attribute.
-    Structure(PyObject, IndexMap<String, InternalDT>),
+    Structure(PyObject, IndexMap<String, (usize, InternalDT)>),
 }
 
 impl InternalDT {
-    pub fn py_from_bytes(&self, mut bytes: Vec<u8>) -> crate::Result<PyObject> {
+    pub fn py_from_bytes(&self, bytes: Vec<u8>) -> crate::Result<PyObject> {
         Python::with_gil(|py| match self {
             InternalDT::Byte => Ok(i8::from_le_bytes(bytes[..].try_into()?).to_object(py)),
             InternalDT::UByte => Ok(u8::from_le_bytes(bytes[..].try_into()?).to_object(py)),
@@ -98,8 +98,10 @@ impl InternalDT {
             InternalDT::Structure(class, dts) => {
                 let class_inst = class.call0(py)?;
                 dts.into_iter()
-                    .try_for_each::<_, crate::Result<()>>(|(name, dt)| {
-                        let val = dt.py_from_bytes(bytes.drain(..dt.size()).collect())?;
+                    .try_for_each::<_, crate::Result<()>>(|(name, (offset, dt))| {
+                        let start = *offset;
+                        let size = dt.size();
+                        let val = dt.py_from_bytes(bytes[start..(start + size)].to_vec())?;
                         class_inst.setattr(py, name.as_str(), val)?;
                         Ok(())
                     })?;
@@ -151,10 +153,11 @@ impl InternalDT {
             // NOTE: The passed object is not checked to be type of structure.
             InternalDT::Structure(_, dts) => {
                 let mut bytes = Vec::new();
+                bytes.resize(self.size(), 0);
                 dts.into_iter()
-                    .try_for_each::<_, crate::Result<()>>(|(name, dt)| {
+                    .try_for_each::<_, crate::Result<()>>(|(name, (offset, dt))| {
                         if let Ok(val_obj) = obj.getattr(py, name.as_str()) {
-                            bytes.append(&mut dt.py_to_bytes(val_obj)?);
+                            bytes.splice(offset..&(offset + dt.size()), dt.py_to_bytes(val_obj)?);
                             Ok(())
                         } else {
                             Err(MemflowPyError::MissingAttribute(name.to_owned()))
@@ -186,7 +189,14 @@ impl InternalDT {
             InternalDT::Pointer64(_) => 8,
             InternalDT::Pointer(_) => size_of::<usize>(),
             InternalDT::Array(_, dt, len) => dt.size() * (*len as usize),
-            InternalDT::Structure(_, dts) => dts.iter().map(|(_, dt)| dt.size()).sum(),
+            InternalDT::Structure(_, dts) => {
+                let (_, max_dt) = dts
+                    .iter()
+                    .max_by(|(_, x), (_, y)| (x.0 + x.1.size()).cmp(&(y.0 + y.1.size())))
+                    .unwrap();
+                // Offset + dt size
+                max_dt.0 + max_dt.1.size()
+            }
         }
     }
 }
@@ -245,18 +255,52 @@ impl TryFrom<PyObject> for InternalDT {
                         .extract::<Vec<Vec<PyObject>>>(py)
                 })?;
 
-                let dt_fields = fields
+                // TODO: Clean this up with a zip iter (offset, field_tuple)
+                let mut current_offset = 0_usize;
+                let mut dt_fields = fields
                     .into_iter()
                     .map(|field| {
                         let mut it = field.into_iter();
+                        let field_offset = current_offset;
                         let field_name = it.next().unwrap().to_string();
                         let field_type: InternalDT = it
                             .next()
                             .ok_or_else(|| MemflowPyError::NoType(field_name.clone()))?
                             .try_into()?;
-                        Ok((field_name, field_type))
+                        current_offset += field_type.size();
+                        Ok((field_name, (field_offset, field_type)))
                     })
-                    .collect::<Result<IndexMap<String, InternalDT>, MemflowPyError>>()?;
+                    .collect::<Result<IndexMap<String, (usize, InternalDT)>, MemflowPyError>>()?;
+
+                // TODO: Clean this up
+                if let Some(offset_fields) = Python::with_gil::<
+                    _,
+                    Result<Option<IndexMap<String, (usize, InternalDT)>>, MemflowPyError>,
+                >(|py| {
+                    if let Ok(offsets_attr) = value.getattr(py, "_offsets_") {
+                        let offsets_obj = offsets_attr.extract::<Vec<Vec<PyObject>>>(py)?;
+
+                        let offset_fields = offsets_obj
+                    .into_iter()
+                    .map(|field| {
+                        let mut it = field.into_iter();
+                            let field_offset: usize = it.next().unwrap().extract(py)?;
+                        let field_name = it.next().unwrap().to_string();
+                        let field_type: InternalDT = it
+                            .next()
+                            .ok_or_else(|| MemflowPyError::NoType(field_name.clone()))?
+                            .try_into()?;
+                            Ok((field_name, (field_offset, field_type)))
+                    })
+                        .collect::<Result<IndexMap<String, (usize, InternalDT)>, MemflowPyError>>()?;
+
+                        Ok(Some(offset_fields))
+                    } else {
+                        Ok(None)
+                    }
+                })? {
+                    dt_fields.extend(offset_fields);
+                }
 
                 Ok(Self::Structure(value, dt_fields))
             }

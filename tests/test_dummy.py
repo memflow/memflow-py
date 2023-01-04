@@ -50,3 +50,24 @@ def test_os_phys_rw():
     # Test reading through a pointer.
     point_works = my_os.phys_read_ptr(test_works.ptr)
     assert point_works.x == 55
+
+
+class TEST_OFFSETS(Structure):
+    _fields_ = [("one", (c_uint32 * 2)), ("two", c_int64)]
+    _offsets_ = [(0x8, "two_offset", c_int64)]
+
+    def __str__(self):
+        return f"TEST_OFFSETS = {self.one}, {self.two}"
+
+
+def test_offsets():
+    my_os = dummy.os()
+
+    # Test writing new `TEST` structure.
+    test_struct = TEST_OFFSETS((1, 2), 2, two_offset=2)
+    my_os.phys_write(0, TEST_OFFSETS, test_struct)
+
+    # Test reading a structure with offsets.
+    test_works = my_os.phys_read(0, TEST_OFFSETS)
+    assert test_works.two_offset == 2
+
