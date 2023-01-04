@@ -55,8 +55,8 @@ impl InternalDT {
         Python::with_gil(|py| match self {
             InternalDT::Byte => Ok(i8::from_le_bytes(bytes[..].try_into()?).to_object(py)),
             InternalDT::UByte => Ok(u8::from_le_bytes(bytes[..].try_into()?).to_object(py)),
-            InternalDT::Char => Ok(PyBytes::new(py, &bytes).to_object(py)),
-            InternalDT::WideChar => todo!(),
+            InternalDT::Char => Ok(c_char::from_le_bytes(bytes[..].try_into()?).to_object(py)),
+            InternalDT::WideChar => Ok(u16::from_le_bytes(bytes[..].try_into()?).to_object(py)),
             InternalDT::Double => Ok(c_double::from_le_bytes(bytes[..].try_into()?).to_object(py)),
             InternalDT::LongDouble => todo!(),
             InternalDT::Float => Ok(c_float::from_le_bytes(bytes[..].try_into()?).to_object(py)),
@@ -104,12 +104,9 @@ impl InternalDT {
         Python::with_gil(|py| match self {
             InternalDT::Byte => Ok(obj.extract::<i8>(py)?.to_le_bytes().to_vec()),
             InternalDT::UByte => Ok(obj.extract::<u8>(py)?.to_le_bytes().to_vec()),
-            InternalDT::Char => Ok(PyBytes::try_from_exact(obj.as_ref(py))
-                .unwrap()
-                .as_bytes()
-                .to_owned()),
+            InternalDT::Char => Ok(obj.extract::<c_char>(py)?.to_le_bytes().to_vec()),
             // OS widechar encoding.
-            InternalDT::WideChar => todo!(),
+            InternalDT::WideChar => Ok(obj.extract::<u16>(py)?.to_le_bytes().to_vec()),
             InternalDT::Double => Ok(obj.extract::<c_double>(py)?.to_le_bytes().to_vec()),
             InternalDT::LongDouble => todo!(),
             InternalDT::Float => Ok(obj.extract::<c_float>(py)?.to_le_bytes().to_vec()),
@@ -200,9 +197,10 @@ impl TryFrom<PyObject> for InternalDT {
                     "c_byte" => Self::Byte,
                     "c_ubyte" | "c_bool" => Self::UByte,
                     "c_char" => Self::Char,
-                    "c_char_p" => todo!("add c_char_p support"),
                     "c_wchar" => Self::WideChar,
-                    "c_wchar_p" => todo!("add c_wchar_p support"),
+                    "c_char_p" | "c_wchar_p" => {
+                        unimplemented!("please use `read_char_string` and `read_wchar_string`")
+                    }
                     "c_double" => Self::Double,
                     "c_longdouble" => Self::LongDouble,
                     "c_float" => Self::Float,
@@ -265,17 +263,17 @@ impl TryFrom<PyObject> for InternalDT {
                         let offsets_obj = offsets_attr.extract::<Vec<Vec<PyObject>>>(py)?;
 
                         let offset_fields = offsets_obj
-                    .into_iter()
-                    .map(|field| {
-                        let mut it = field.into_iter();
+                        .into_iter()
+                        .map(|field| {
+                            let mut it = field.into_iter();
                             let field_offset: usize = it.next().unwrap().extract(py)?;
-                        let field_name = it.next().unwrap().to_string();
-                        let field_type: InternalDT = it
-                            .next()
-                            .ok_or_else(|| MemflowPyError::NoType(field_name.clone()))?
-                            .try_into()?;
+                            let field_name = it.next().unwrap().to_string();
+                            let field_type: InternalDT = it
+                                .next()
+                                .ok_or_else(|| MemflowPyError::NoType(field_name.clone()))?
+                                .try_into()?;
                             Ok((field_name, (field_offset, field_type)))
-                    })
+                        })
                         .collect::<Result<IndexMap<String, (usize, InternalDT)>, MemflowPyError>>()?;
 
                         Ok(Some(offset_fields))

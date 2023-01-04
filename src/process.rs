@@ -1,10 +1,10 @@
 use crate::{internal::InternalDT, MemflowPyError};
 use memflow::{
     prelude::{
-        ArchitectureIdent, IntoProcessInstanceArcBox, MemoryView, ModuleInfo, Process, ProcessInfo,
-        ProcessState,
+        ArchitectureIdent, IntoProcessInstanceArcBox, MemoryView, ModuleInfo, PartialError,
+        Process, ProcessInfo, ProcessState,
     },
-    types::umem,
+    types::{umem, Address},
 };
 use pyo3::{exceptions::PyException, prelude::*};
 
@@ -29,6 +29,55 @@ impl PyProcess {
             .map_err(|e| PyException::new_err(format!("failed to read bytes {}", e)))?;
 
         Ok(dt.py_from_bytes(bytes)?)
+    }
+
+    fn read_char_string(&mut self, addr: umem, max_bytes: Option<usize>) -> PyResult<String> {
+        let str = self
+            .0
+            .read_char_string_n(addr.into(), max_bytes.unwrap_or(4096))
+            .map_err(|e| {
+                PyException::new_err(format!("failed to read variable length string {}", e))
+            })?;
+
+        Ok(str)
+    }
+
+    fn read_wchar_string(&mut self, addr: umem, max_bytes: Option<usize>) -> PyResult<Vec<u16>> {
+        let mut read_wchar_string_n =
+            |addr: Address, n: usize| -> Result<Vec<u16>, PartialError<memflow::prelude::Error>> {
+                let mut buf = vec![0; std::cmp::min(32, n)];
+                let mut last_n = 0;
+                loop {
+                    let (_, right) = buf.split_at_mut(last_n);
+                    memflow::prelude::PartialResultExt::data_part(
+                        self.0.read_raw_into(addr + last_n, right),
+                    )?;
+                    if let Some((n, _)) = right.iter().enumerate().find(|(_, c)| **c == 0_u8) {
+                        buf.truncate(last_n + n);
+                        return Ok(buf
+                            .chunks_exact(2)
+                            .into_iter()
+                            .map(|a| u16::from_ne_bytes([a[0], a[1]]))
+                            .collect());
+                    }
+                    if buf.len() >= n {
+                        break;
+                    }
+                    last_n = buf.len();
+                    buf.extend((0..buf.len()).map(|_| 0));
+                }
+                Err(PartialError::Error(memflow::prelude::Error(
+                    memflow::prelude::ErrorOrigin::VirtualMemory,
+                    memflow::prelude::ErrorKind::OutOfBounds,
+                )))
+            };
+
+        let wide_str_buf: Vec<u16> = read_wchar_string_n(addr.into(), max_bytes.unwrap_or(4096))
+            .map_err(|e| {
+                PyException::new_err(format!("failed to read variable length wide string {}", e))
+            })?;
+
+        Ok(wide_str_buf)
     }
 
     fn read_ptr(&mut self, ptr_inst: PyObject) -> PyResult<PyObject> {

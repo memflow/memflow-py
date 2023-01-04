@@ -71,3 +71,14 @@ def test_offsets():
     test_works = my_os.phys_read(0, TEST_OFFSETS)
     assert test_works.two_offset == 2
 
+
+def test_string():
+    my_os = dummy.os()
+    proc_info = my_os.process_info_list()[0]
+    proc = my_os.process_from_info(proc_info)
+
+    # Test writing a string using `bytes`
+    proc.write(proc_info.address, c_char * 8, bytes("it works", "utf-8"))
+    # Test reading a char null terminated string.
+    test_works = proc.read_char_string(proc_info.address)
+    assert test_works == "it works"
