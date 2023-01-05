@@ -13,7 +13,6 @@ class MFPointer(Structure):
 
     def __init__(self, addr):
         self.addr = addr
-        print(f"self: {self}")
 
     def __str__(self):
         return f"{self._type_.__name__} @ {hex(self.addr)}"
