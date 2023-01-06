@@ -20,7 +20,9 @@ class MFPointer(Structure):
 
 def MF_POINTER(target_type, byteness):
     global mf_lp_types
-    if target_type not in mf_lp_types:
+    if byteness not in mf_lp_types:
+        mf_lp_types[byteness] = dict()
+    if target_type not in mf_lp_types[byteness]:
         ptr_type = type(
             f"MF_LP_{target_type.__name__}",
             (MFPointer,),
@@ -29,8 +31,8 @@ def MF_POINTER(target_type, byteness):
                 _byteness_=byteness,
             ),
         )
-        mf_lp_types[target_type] = ptr_type
-    return mf_lp_types[target_type]
+        mf_lp_types[byteness][target_type] = ptr_type
+    return mf_lp_types[byteness][target_type]
 
 
 def POINTER64(target_type):
