@@ -1,5 +1,6 @@
 use std::array::TryFromSliceError;
 
+use internal::InternalDT;
 use pyo3::{exceptions::PyException, prelude::*};
 use thiserror::Error;
 
@@ -41,11 +42,18 @@ impl From<MemflowPyError> for PyErr {
     }
 }
 
+#[pyfunction]
+fn sizeof(ty: PyObject) -> PyResult<usize> {
+    let dt: InternalDT = ty.try_into()?;
+    Ok(dt.size())
+}
+
 #[pymodule]
 #[pyo3(name = "memflow")]
 fn memflow_py(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     pyo3_log::init();
     dummy::register_dummy_module(_py, m)?;
+    m.add_function(wrap_pyfunction!(sizeof, m)?)?;
     m.add_class::<inventory::PyInventory>()?;
     m.add_class::<process::PyProcess>()?;
     m.add_class::<process::PyProcessInfo>()?;

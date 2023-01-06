@@ -1,4 +1,5 @@
 from memflow import *
+from memflow import sizeof as mf_sizeof
 from ctypes import *
 
 
@@ -82,3 +83,11 @@ def test_string():
     # Test reading a char null terminated string.
     test_works = proc.read_char_string(proc_info.address)
     assert test_works == "it works"
+
+
+class TEST_SIZEOF(Structure):
+    _fields_ = [("one", (c_uint32 * 2)), ("two", c_int64), ("ptr", POINTER32(POINT))]
+
+
+def test_sizeof():
+    assert mf_sizeof(TEST_SIZEOF) == 0x14
