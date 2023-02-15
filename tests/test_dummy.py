@@ -1,6 +1,4 @@
 from memflow import *
-from memflow import sizeof as mf_sizeof
-from ctypes import *
 
 
 class POINT(Structure):
@@ -73,6 +71,23 @@ def test_offsets():
     assert test_works.two_offset == 2
 
 
+class NESTED_OFFSET_TEST(Structure):
+    _fields_ = [("inner", TEST_OFFSETS)]
+
+
+# TODO: Test `_anonymous_` make sure it can unnest a struct field into struct
+def test_nested_offsets():
+    my_os = dummy.os()
+
+    # Test writing new `TEST` structure.
+    test_struct = TEST_OFFSETS((1, 2), 2, two_offset=2)
+    my_os.phys_write(0, TEST_OFFSETS, test_struct)
+
+    # Test reading a nested structure with offsets.
+    test_works = my_os.phys_read(0, NESTED_OFFSET_TEST).inner
+    assert test_works.two_offset == 2
+
+
 def test_string():
     my_os = dummy.os()
     proc_info = my_os.process_info_list()[0]
@@ -90,4 +105,4 @@ class TEST_SIZEOF(Structure):
 
 
 def test_sizeof():
-    assert mf_sizeof(TEST_SIZEOF) == 0x14
+    assert sizeof(TEST_SIZEOF) == 0x14

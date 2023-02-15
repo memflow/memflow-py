@@ -189,16 +189,9 @@ impl TryFrom<PyObject> for InternalDT {
             base_obj.getattr(py, "__name__")?.extract(py)
         })?;
 
+        // NOTE: While we do try to follow ctypes there is no guarantee that it will work.
         match base_name.as_str() {
-            "_SimpleCData" => {
-                let name: String =
-                    Python::with_gil(|py| value.getattr(py, "__name__")?.extract(py))?;
-                let dt = match name.as_str() {
-                    "c_byte" => Self::Byte,
-                    "c_ubyte" | "c_bool" => Self::UByte,
-                    "c_char" => Self::Char,
-                    "c_wchar" => Self::WideChar,
-                    "c_char_p" | "c_wchar_p" => {
+            "CDataType" | "_SimpleCData" => {
                         unimplemented!("please use `read_char_string` and `read_wchar_string`")
                     }
                     "c_double" => Self::Double,
@@ -216,9 +209,12 @@ impl TryFrom<PyObject> for InternalDT {
                 };
                 Ok(dt)
             }
-            "MFPointer" => {
-                let byteness: u32 =
-                    Python::with_gil(|py| value.getattr(py, "_byteness_")?.extract(py))?;
+            "Pointer" => {
+                let byteness: u32 = Python::with_gil(|py| match value.getattr(py, "_byteness_") {
+                    Ok(val) => val.extract(py),
+                    // If we are passed a pointer with no set byteness we assume the pointer to be local system width.
+                    Err(_) => Ok(size_of::<usize>() as u32),
+                })?;
                 Ok(Self::Pointer(value, byteness))
             }
             "Array" => {
