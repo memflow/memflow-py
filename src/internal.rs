@@ -4,7 +4,7 @@ use std::mem::size_of;
 use indexmap::IndexMap;
 use memflow::types::umem;
 use pyo3::prelude::*;
-use pyo3::types::PyTuple;
+use pyo3::types::{PyDict, PyTuple};
 
 use crate::MemflowPyError;
 
@@ -86,15 +86,17 @@ impl InternalDT {
                 ),
             )?),
             InternalDT::Structure(class, dts) => {
-                let class_inst = class.call0(py)?;
+                let dict = PyDict::new(py);
                 dts.into_iter()
                     .try_for_each::<_, crate::Result<()>>(|(name, (offset, dt))| {
                         let start = *offset;
                         let size = dt.size();
                         let val = dt.py_from_bytes(bytes[start..(start + size)].to_vec())?;
-                        class_inst.setattr(py, name.as_str(), val)?;
+                        dict.set_item(name.as_str(), val)?;
                         Ok(())
                     })?;
+                // Create instance passing fields through kwargs, easy to override for usecases such as field punting.
+                let class_inst = class.call(py, (), Some(dict))?;
                 Ok(class_inst)
             }
         })
