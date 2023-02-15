@@ -194,20 +194,29 @@ impl TryFrom<PyObject> for InternalDT {
         // NOTE: While we do try to follow ctypes there is no guarantee that it will work.
         match base_name.as_str() {
             "CDataType" | "_SimpleCData" => {
+                // Type identifier originates from ctypes (see: cpython/Lib/ctypes/__init__.py)
+                let type_ident: String =
+                    Python::with_gil(|py| value.getattr(py, "_type_")?.extract(py))?;
+                let dt = match type_ident.as_str() {
+                    "b" => Self::Byte,
+                    "B" | "?" => Self::UByte,
+                    "c" => Self::Char,
+                    "u" => Self::WideChar,
+                    "z" | "Z" => {
                         unimplemented!("please use `read_char_string` and `read_wchar_string`")
                     }
-                    "c_double" => Self::Double,
-                    "c_longdouble" => Self::LongDouble,
-                    "c_float" => Self::Float,
-                    "c_short" => Self::Short,
-                    "c_ushort" => Self::UShort,
-                    "c_int" => Self::Int,
-                    "c_uint" => Self::UInt,
-                    "c_long" => Self::Long,
-                    "c_ulong" => Self::ULong,
-                    "c_longlong" => Self::LongLong,
-                    "c_ulonglong" => Self::ULongLong,
-                    name => unreachable!("unknown SimpleCData type: {}", name),
+                    "d" => Self::Double,
+                    "g" => Self::LongDouble,
+                    "f" => Self::Float,
+                    "h" => Self::Short,
+                    "H" => Self::UShort,
+                    "i" => Self::Int,
+                    "I" => Self::UInt,
+                    "l" => Self::Long,
+                    "L" => Self::ULong,
+                    "q" => Self::LongLong,
+                    "Q" => Self::ULongLong,
+                    name => unreachable!("unknown type identifier `{}`", name),
                 };
                 Ok(dt)
             }
