@@ -1,5 +1,4 @@
 from memflow import *
-from ctypes import *
 import logging
 
 
