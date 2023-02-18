@@ -16,17 +16,16 @@ class TEST(Structure):
 
 
 def test_basic():
-    my_os = dummy.os()
-    proc_info = my_os.process_info_list()[0]
-    proc = my_os.process_from_info(proc_info)
+    proc = dummy.quick_process(4096, bytes([0x8]))
+    proc_address = proc.info().address
 
     # Test writing new `TEST` structure.
-    test_struct = TEST((1, 2), -2, POINTER64(POINT)(proc_info.address + 0x7777))
-    proc.write(proc_info.address, TEST, test_struct)
-    proc.write(proc_info.address + 0x7777, POINT, POINT(55, 3.14))
+    test_struct = TEST((1, 2), -2, POINTER64(POINT)(proc_address + 0x777))
+    proc.write(proc_address, TEST, test_struct)
+    proc.write(proc_address + 0x777, POINT, POINT(55, 3.14))
 
     # Test reading a structure.
-    test_works = proc.read(proc_info.address, TEST)
+    test_works = proc.read(proc_address, TEST)
     assert test_works.two == -2
 
     # Test reading through a pointer.
@@ -35,12 +34,12 @@ def test_basic():
 
 
 def test_os_phys_rw():
-    my_os = dummy.os()
+    my_os = dummy.DummyOs(dummy.DummyMemory(4096)).retrieve_os()
 
     # Test writing new `TEST` structure.
-    test_struct = TEST((1, 2), 2, POINTER64(POINT)(0x7777))
+    test_struct = TEST((1, 2), 2, POINTER64(POINT)(0x777))
     my_os.phys_write(0, TEST, test_struct)
-    my_os.phys_write(0x7777, POINT, POINT(55, 3.14))
+    my_os.phys_write(0x777, POINT, POINT(55, 3.14))
 
     # Test reading a structure.
     test_works = my_os.phys_read(0, TEST)
@@ -60,7 +59,7 @@ class TEST_OFFSETS(Structure):
 
 
 def test_offsets():
-    my_os = dummy.os()
+    my_os = dummy.DummyOs(dummy.DummyMemory(4096)).retrieve_os()
 
     # Test writing new `TEST` structure.
     test_struct = TEST_OFFSETS((1, 2), 2, two_offset=2)
@@ -77,7 +76,7 @@ class NESTED_OFFSET_TEST(Structure):
 
 # TODO: Test `_anonymous_` make sure it can unnest a struct field into struct
 def test_nested_offsets():
-    my_os = dummy.os()
+    my_os = dummy.DummyOs(dummy.DummyMemory(4096)).retrieve_os()
 
     # Test writing new `TEST` structure.
     test_struct = TEST_OFFSETS((1, 2), 2, two_offset=2)
@@ -89,14 +88,13 @@ def test_nested_offsets():
 
 
 def test_string():
-    my_os = dummy.os()
-    proc_info = my_os.process_info_list()[0]
-    proc = my_os.process_from_info(proc_info)
+    proc = dummy.quick_process(4096, bytes([0x8]))
+    proc_address = proc.info().address
 
     # Test writing a string using `bytes`
-    proc.write(proc_info.address, c_char * 8, bytes("it works", "utf-8"))
+    proc.write(proc_address, c_char * 8, bytes("it works", "utf-8"))
     # Test reading a char null terminated string.
-    test_works = proc.read_char_string(proc_info.address)
+    test_works = proc.read_char_string(proc_address)
     assert test_works == "it works"
 
 

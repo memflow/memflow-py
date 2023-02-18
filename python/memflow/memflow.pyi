@@ -1,3 +1,5 @@
+import memflow.dummy
+
 from typing import Optional, Type, Any, List
 
 def sizeof(type: Type[_CT]) -> int: ...
