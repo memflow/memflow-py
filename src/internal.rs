@@ -8,6 +8,8 @@ use pyo3::types::{PyDict, PyTuple};
 
 use crate::MemflowPyError;
 
+pub type DTMap = IndexMap<String, (usize, InternalDT)>;
+
 /// Please stick to explicit widths, no c_int nonsense!
 #[derive(Clone, Debug)]
 pub enum InternalDT {
@@ -47,7 +49,7 @@ pub enum InternalDT {
     // Backed by the ctypes (ctype * size) syntax.
     Array(PyObject, Box<InternalDT>, u32),
     /// Any python class with a ctypes _fields_ attribute.
-    Structure(PyObject, IndexMap<String, (usize, InternalDT)>),
+    Structure(PyObject, DTMap),
 }
 
 impl InternalDT {
@@ -259,35 +261,34 @@ impl TryFrom<PyObject> for InternalDT {
                         current_offset += field_type.size();
                         Ok((field_name, (field_offset, field_type)))
                     })
-                    .collect::<Result<IndexMap<String, (usize, InternalDT)>, MemflowPyError>>()?;
+                    .collect::<Result<DTMap, MemflowPyError>>()?;
 
                 // TODO: Clean this up
-                if let Some(offset_fields) = Python::with_gil::<
-                    _,
-                    Result<Option<IndexMap<String, (usize, InternalDT)>>, MemflowPyError>,
-                >(|py| {
-                    if let Ok(offsets_attr) = value.getattr(py, "_offsets_") {
-                        let offsets_obj = offsets_attr.extract::<Vec<Vec<PyObject>>>(py)?;
+                if let Some(offset_fields) =
+                    Python::with_gil::<_, Result<Option<DTMap>, MemflowPyError>>(|py| {
+                        if let Ok(offsets_attr) = value.getattr(py, "_offsets_") {
+                            let offsets_obj = offsets_attr.extract::<Vec<Vec<PyObject>>>(py)?;
 
-                        let offset_fields = offsets_obj
-                        .into_iter()
-                        .map(|field| {
-                            let mut it = field.into_iter();
-                            let field_offset: usize = it.next().unwrap().extract(py)?;
-                            let field_name = it.next().unwrap().to_string();
-                            let field_type: InternalDT = it
-                                .next()
-                                .ok_or_else(|| MemflowPyError::NoType(field_name.clone()))?
-                                .try_into()?;
-                            Ok((field_name, (field_offset, field_type)))
-                        })
-                        .collect::<Result<IndexMap<String, (usize, InternalDT)>, MemflowPyError>>()?;
+                            let offset_fields = offsets_obj
+                                .into_iter()
+                                .map(|field| {
+                                    let mut it = field.into_iter();
+                                    let field_offset: usize = it.next().unwrap().extract(py)?;
+                                    let field_name = it.next().unwrap().to_string();
+                                    let field_type: InternalDT = it
+                                        .next()
+                                        .ok_or_else(|| MemflowPyError::NoType(field_name.clone()))?
+                                        .try_into()?;
+                                    Ok((field_name, (field_offset, field_type)))
+                                })
+                                .collect::<Result<DTMap, MemflowPyError>>()?;
 
-                        Ok(Some(offset_fields))
-                    } else {
-                        Ok(None)
-                    }
-                })? {
+                            Ok(Some(offset_fields))
+                        } else {
+                            Ok(None)
+                        }
+                    })?
+                {
                     dt_fields.extend(offset_fields);
                 }
 
