@@ -20,6 +20,12 @@ class Structure(object, metaclass=CDataTypeMeta):
             setattr(cls, field_name, field_val)
         return super(Structure, cls).__new__(cls)
 
+    def __eq__(self, other):
+        if self.__class__ == other.__class__:
+            return self.__dict__ == other.__dict__
+        else:
+            raise TypeError("Comparing object is not of the same structure type.")
+
     def __str__(self):
         return repr(self)
 
