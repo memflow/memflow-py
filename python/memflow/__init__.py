@@ -1,7 +1,13 @@
 from .memflow import *
 
+
+class CDataTypeMeta(type):
+    def __mul__(self, length):
+        return ARRAY(self, length)
+
+
 # TODO: Move to rust
-class Structure:
+class Structure(object, metaclass=CDataTypeMeta):
     def __new__(cls, *args, **kwargs):
         # self._endianness_ = "what to put here?"
         # unpack *args to kwargs if not already present
@@ -68,11 +74,6 @@ def ARRAY(target_type, len):
         )
         mf_arr_types[len][target_type] = arr_type
     return mf_arr_types[len][target_type]
-
-
-class CDataTypeMeta(type):
-    def __mul__(self, length):
-        return ARRAY(self, length)
 
 
 class CDataType(object, metaclass=CDataTypeMeta):
