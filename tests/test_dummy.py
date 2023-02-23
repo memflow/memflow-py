@@ -104,3 +104,14 @@ class TEST_SIZEOF(Structure):
 
 def test_sizeof():
     assert sizeof(TEST_SIZEOF) == 0x14
+
+
+def test_struct_array():
+    proc = dummy.quick_process(4096, bytes([0x8]))
+    proc_address = proc.info().address
+
+    # Test writing an array of structures.
+    proc.write(proc_address, POINT * 3, [POINT(1, 2), POINT(3, 4), POINT(5, 6)])
+    # Test reading an array of structures.
+    test_works = proc.read(proc_address, POINT * 3)
+    assert test_works[0] == POINT(1, 2)
