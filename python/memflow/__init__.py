@@ -31,12 +31,13 @@ class Structure(object, metaclass=CDataTypeMeta):
 
     def __repr__(self):
         fields_strs = []
-        for field in self._fields_:
-            field_name = field[0]
-            # Skip "private" fields (i.e. _pad_0x0)
-            if field_name.startswith("_"):
-                continue
-            fields_strs.append(f"{field_name}={getattr(self, field_name)}")
+        if hasattr(self, "_fields_"):
+            for field in self._fields_:
+                field_name = field[0]
+                # Skip "private" fields (i.e. _pad_0x0)
+                if field_name.startswith("_"):
+                    continue
+                fields_strs.append(f"{field_name}={getattr(self, field_name)}")
         return "{}({})".format(self.__class__.__name__, ", ".join(fields_strs))
 
 
