@@ -9,9 +9,6 @@ class COFFHeader(Structure):
         ("timestamp", c_uint32),
     ]
 
-    def __str__(self):
-        return f"{self.sections}, {self.timestamp}"
-
 
 # Setup logging
 FORMAT = "%(levelname)s %(name)s %(asctime)-15s %(filename)s:%(lineno)d %(message)s"
