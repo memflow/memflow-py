@@ -179,10 +179,41 @@ class Pointer(Structure):
     _fields_ = [("addr", umem)]
 
     def __init__(self, addr):
+        if addr < 0:
+            raise ValueError("addr should be a positive number")
         self.addr = addr
+
+    def is_null(self):
+        return self.addr != 0
+
+    def __add__(self, other):
+        if other < 0:
+            raise ValueError("other should be a positive number")
+        return Pointer(self.addr + other)
+
+    def __sub__(self, other):
+        if other < 0:
+            raise ValueError("other should be a positive number")
+        return Pointer(self.addr - other)
+
+    def __bool__(self):
+        return self.is_null()
+
+    def __eq__(self, other):
+        if isinstance(other, Pointer):
+            return self.addr == other.addr
+        return self.addr == other
+
+    def __ne__(self, other):
+        if isinstance(other, Pointer):
+            return self.addr != other.addr
+        return self.addr != other
 
     def __str__(self):
         return f"{self._type_.__name__} @ {hex(self.addr)}"
+
+    def __repr__(self):
+        return f"{self._type_.__name__}({hex(self.addr)})"
 
 
 # Cache for memflow pointer types.
