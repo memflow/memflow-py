@@ -45,7 +45,7 @@ pub enum InternalDT {
     /// Represents the C unsigned long long datatype.
     ULongLong,
     /// Native pointer type, backed by `MF_Pointer`.
-    Pointer(PyObject, u32),
+    Pointer(PyObject, usize),
     // Backed by the ctypes (ctype * size) syntax.
     Array(PyObject, Box<InternalDT>, u32),
     /// Any python class with a ctypes _fields_ attribute.
@@ -223,11 +223,12 @@ impl TryFrom<PyObject> for InternalDT {
                 Ok(dt)
             }
             "Pointer" => {
-                let byteness: u32 = Python::with_gil(|py| match value.getattr(py, "_byteness_") {
-                    Ok(val) => val.extract(py),
-                    // If we are passed a pointer with no set byteness we assume the pointer to be local system width.
-                    Err(_) => Ok(size_of::<usize>() as u32),
-                })?;
+                let byteness: usize =
+                    Python::with_gil(|py| match value.getattr(py, "_byteness_") {
+                        Ok(val) => val.extract(py),
+                        // If we are passed a pointer with no set byteness we assume the pointer to be local system width.
+                        Err(_) => Ok(size_of::<usize>()),
+                    })?;
                 Ok(Self::Pointer(value, byteness))
             }
             "Array" => {
