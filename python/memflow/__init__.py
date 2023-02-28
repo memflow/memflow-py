@@ -27,17 +27,31 @@ class Structure(object, metaclass=CDataTypeMeta):
             raise TypeError("Comparing object is not of the same structure type.")
 
     def __str__(self):
-        return repr(self)
-
-    def __repr__(self):
         fields_strs = []
-        if hasattr(self, "_fields_"):
-            for field in self._fields_:
-                field_name = field[0]
+        append_field = lambda name: fields_strs.append(f"{name}={getattr(self, name)}")
+        for field in self._fields_:
+            field_name = field[0]
+            # Skip "private" fields (i.e. _pad_0x0)
+            if field_name.startswith("_"):
+                continue
+            append_field(field_name)
+        if hasattr(self, "_offsets_"):
+            for offset_field in self._offsets_:
+                field_name = offset_field[1]
                 # Skip "private" fields (i.e. _pad_0x0)
                 if field_name.startswith("_"):
                     continue
-                fields_strs.append(f"{field_name}={getattr(self, field_name)}")
+                append_field(field_name)
+        return "{}".format(" ".join(fields_strs))
+
+    def __repr__(self):
+        fields_strs = []
+        append_field = lambda name: fields_strs.append(f"{name}={getattr(self, name)}")
+        for field in self._fields_:
+            append_field(field[0])
+        if hasattr(self, "_offsets_"):
+            for offset_field in self._offsets_:
+                append_field(offset_field[1])
         return "{}({})".format(self.__class__.__name__, ", ".join(fields_strs))
 
 
@@ -56,10 +70,6 @@ class Array:
         return repr(self)
 
     def __repr__(self):
-        fields_strs = []
-        for field in self._fields_:
-            field_name = field[0]
-            fields_strs.append(f"{field_name}={getattr(self, field_name)}")
         return "ARRAY({}, {})({})".format(
             self._type_.__name__, len(self), ", ".join(self._vals_)
         )

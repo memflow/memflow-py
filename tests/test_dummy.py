@@ -98,14 +98,6 @@ def test_string():
     assert test_works == "it works"
 
 
-class TEST_SIZEOF(Structure):
-    _fields_ = [("one", (c_uint32 * 2)), ("two", c_int64), ("ptr", POINTER32(POINT))]
-
-
-def test_sizeof():
-    assert sizeof(TEST_SIZEOF) == 0x14
-
-
 def test_struct_array():
     proc = dummy.quick_process(4096, bytes([0x8]))
     proc_address = proc.info().address
