@@ -37,19 +37,19 @@ print(header)
 
 - Rust ([Compilation support](https://github.com/memflow/memflow#compilation-support))
 - Python (3.7 and up)
-
-### Advisory warning
-
-It is advised to build in a [python virtual environment](https://docs.python.org/3/tutorial/venv.html), so that you do not accidentally break anything that depends on this package.
+- [python virtual environment](https://docs.python.org/3/tutorial/venv.html)
 
 ### Steps
 
 1. Fetch repository: `git clone https://github.com/memflow/memflow-py`
 2. Install maturin package: `pip install maturin`
 3. Install dev packages: `pip install '.[dev]'`
-4. Build wheels and install package: `maturin develop`
-5. Repeat step 4 when you make changes to source.
-6. Test your changes: `python -m pytest`
+4. Create virtualenv `virtualenv .`
+5. Active virtualenv `source ./bin/activate`
+6. Build wheels and install package: `maturin develop`
+7. Repeat step 4 when you make changes to source.
+7. Install pytest `pip install pytest`
+8. Test your changes: `python -m pytest`
 
 For more information on building please see [Maturin].
 
