@@ -70,8 +70,8 @@ class Array:
         return repr(self)
 
     def __repr__(self):
-        return "ARRAY({}, {})({})".format(
-            self._type_.__name__, len(self), ", ".join(self._vals_)
+        return "ARRAY({}, {}){}".format(
+            self._type_.__name__, len(self), self._vals_.__repr__()
         )
 
 
