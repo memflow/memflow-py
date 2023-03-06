@@ -11,7 +11,6 @@
 
 ```py
 from memflow import *
-from ctypes import *
 
 class COFFHeader(Structure):
     _fields_ = [
@@ -19,9 +18,6 @@ class COFFHeader(Structure):
         ("sections", c_short),
         ("timestamp", c_uint32),
     ]
-
-    def __str__(self):
-        return f"{self.sections}, {self.timestamp}"
 
 inventory = Inventory()
 os = inventory.create_os("native")
