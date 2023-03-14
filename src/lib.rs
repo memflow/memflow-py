@@ -19,9 +19,9 @@ pub enum MemflowPyError {
     Memflow(#[from] memflow::error::Error),
     #[error(transparent)]
     Python(#[from] PyErr),
-    #[error("the python type `{0}` is not a valid type")]
+    #[error("Python type `{0}` is not a valid type")]
     InvalidType(String),
-    #[error("no python type found for `{0}`")]
+    #[error("Python type found for `{0}`")]
     NoType(String),
     #[error(transparent)]
     ByteCast(#[from] TryFromSliceError),
