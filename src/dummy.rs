@@ -2,8 +2,7 @@
 
 use memflow::{
     dummy::{DummyMemory, DummyOs},
-    os::OsInner,
-    prelude::{IntoProcessInstance, OsInstance, PhysicalMemory, Pid},
+    prelude::{IntoProcessInstance, Os, OsInstance, PhysicalMemory, Pid},
     types::umem,
 };
 use pyo3::{exceptions::PyException, prelude::*};

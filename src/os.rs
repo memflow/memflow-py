@@ -1,5 +1,5 @@
 use memflow::{
-    os::{process::Pid, OsInner},
+    os::{process::Pid, Os},
     prelude::{MemoryView, OsInstanceArcBox, PhysicalMemory},
     types::umem,
 };
