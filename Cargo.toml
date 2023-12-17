@@ -13,16 +13,16 @@ name = "memflow"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.17", features = [
+pyo3 = { version = "0.20", features = [
     "extension-module",
     "abi3-py37",
     "macros",
 ] }
-pyo3-log = "0.7"
-memflow = { version = "=0.2.0-beta10", features = ["plugins", "dummy_mem"] }
+pyo3-log = "0.9"
+memflow = { version = "=0.2.0-beta11", features = ["plugins", "dummy_mem"] }
 cglue = "0.2"
 thiserror = "1.0"
-indexmap = "1.9"
+indexmap = "2.1"
 
 [profile.release]
 lto = "fat"

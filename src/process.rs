@@ -145,6 +145,8 @@ impl PyProcessInfo {
         command_line: &str,
         sys_arch: PyArchitectureIdent,
         proc_arch: PyArchitectureIdent,
+        dtb1: umem,
+        dtb2: umem,
     ) -> Self {
         Self(ProcessInfo {
             address: address.into(),
@@ -155,6 +157,8 @@ impl PyProcessInfo {
             command_line: command_line.into(),
             sys_arch: sys_arch.into(),
             proc_arch: proc_arch.into(),
+            dtb1: dtb1.into(),
+            dtb2: dtb2.into(),
         })
     }
 
@@ -198,9 +202,19 @@ impl PyProcessInfo {
         self.0.proc_arch.into()
     }
 
+    #[getter]
+    fn dtb1(&self) -> umem {
+        self.0.dtb1.to_umem()
+    }
+
+    #[getter]
+    fn dtb2(&self) -> umem {
+        self.0.dtb2.to_umem()
+    }
+
     fn __repr__(&self) -> String {
         format!(
-            r#"ProcessInfo(address={:#04x}, pid={}, state={}, name="{}", path="{}", command_line="{}", sys_arch={}, proc_arch={})"#,
+            r#"ProcessInfo(address={:#04x}, pid={}, state={}, name="{}", path="{}", command_line="{}", sys_arch={}, proc_arch={}, dtb1={}, dtb2={})"#,
             self.address(),
             self.pid(),
             self.state().__repr__(),
@@ -208,7 +222,9 @@ impl PyProcessInfo {
             self.path(),
             self.command_line(),
             self.sys_arch().__repr__(),
-            self.proc_arch().__repr__()
+            self.proc_arch().__repr__(),
+            self.dtb1(),
+            self.dtb2()
         )
     }
 
