@@ -61,7 +61,7 @@ jobs:
       - name: Install rust
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: stable # TODO: Use rust-toolchain.toml
+          toolchain: stable
           components: rustfmt, clippy
       - name: Run clippy
         uses: actions-rs/clippy-check@v1
