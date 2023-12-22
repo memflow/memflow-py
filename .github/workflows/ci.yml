@@ -37,7 +37,6 @@ jobs:
           architecture: ${{ matrix.target }}
       - uses: PyO3/maturin-action@v1
         with:
-          rust-toolchain: 1.70
           target: ${{ matrix.target }}
           command: build
           args: --release -o dist --interpreter=${{ steps.python.outputs.python-path }}
