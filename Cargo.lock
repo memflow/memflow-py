@@ -142,7 +142,7 @@ checksum = "f713559a7e76bef29ef6eafb64d05fca776a177bb369be02bbea342dc42ffce8"
 dependencies = [
  "itertools 0.10.5",
  "lazy_static",
- "proc-macro-crate",
+ "proc-macro-crate 1.1.3",
  "proc-macro2",
  "quote",
  "syn 1.0.109",
@@ -208,9 +208,9 @@ dependencies = [
 
 [[package]]
 name = "darling"
-version = "0.13.4"
+version = "0.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a01d95850c592940db9b8194bc39f4bc0e89dee5c4265e4b1807c34a9aba453c"
+checksum = "0209d94da627ab5605dcccf08bb18afa5009cfbef48d8a8b7d7bdbc79be25c5e"
 dependencies = [
  "darling_core",
  "darling_macro",
@@ -218,27 +218,27 @@ dependencies = [
 
 [[package]]
 name = "darling_core"
-version = "0.13.4"
+version = "0.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "859d65a907b6852c9361e3185c862aae7fafd2887876799fa55f5f99dc40d610"
+checksum = "177e3443818124b357d8e76f53be906d60937f0d3a90773a664fa63fa253e621"
 dependencies = [
  "fnv",
  "ident_case",
  "proc-macro2",
  "quote",
  "strsim",
- "syn 1.0.109",
+ "syn 2.0.41",
 ]
 
 [[package]]
 name = "darling_macro"
-version = "0.13.4"
+version = "0.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c972679f83bdf9c42bd905396b6c3588a843a17f0f16dfcfa3e2c5d57441835"
+checksum = "836a9bbc7ad63342d6d6e7b815ccab164bc77a2d95d84bc3117a8c0d5c98e2d5"
 dependencies = [
  "darling_core",
  "quote",
- "syn 1.0.109",
+ "syn 2.0.41",
 ]
 
 [[package]]
@@ -459,9 +459,9 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "memflow"
-version = "0.2.0-beta11"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c33dc6396994b264c27800fd6b2270062381d01a27a1c3676de75dbb4210573"
+checksum = "5e4ab23adc6b68aa85d9d2d43c04f31c51b895acb323f807ff95ed8d844639b1"
 dependencies = [
  "abi_stable",
  "bitflags",
@@ -486,26 +486,26 @@ dependencies = [
  "rangemap",
  "serde",
  "smallvec",
- "toml 0.8.8",
+ "toml 0.8.2",
  "x86_64",
 ]
 
 [[package]]
 name = "memflow-derive"
-version = "0.2.0-beta3"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee50e66f855a8a9c93b7c107fab899b25952ba8c7f0e97602a662a99c84fbef7"
+checksum = "d766f6681f968c92eb0359fc4bc99039ebe2568df4bb884c7cb7b16023e94d32"
 dependencies = [
  "darling",
- "proc-macro-crate",
+ "proc-macro-crate 2.0.1",
  "proc-macro2",
  "quote",
- "syn 1.0.109",
+ "syn 2.0.41",
 ]
 
 [[package]]
 name = "memflow-py"
-version = "0.1.5"
+version = "0.2.0"
 dependencies = [
  "cglue",
  "indexmap",
@@ -643,6 +643,16 @@ checksum = "e17d47ce914bf4de440332250b0edd23ce48c005f59fab39d3335866b114f11a"
 dependencies = [
  "thiserror",
  "toml 0.5.11",
+]
+
+[[package]]
+name = "proc-macro-crate"
+version = "2.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97dc5fea232fc28d2f597b37c4876b348a40e33f3b02cc975c8d006d78d94b1a"
+dependencies = [
+ "toml_datetime",
+ "toml_edit",
 ]
 
 [[package]]
@@ -997,9 +1007,9 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.8.8"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1a195ec8c9da26928f773888e0742ca3ca1040c6cd859c919c9f59c1954ab35"
+checksum = "185d8ab0dfbb35cf1399a6344d8484209c088f75f8f68230da55d48d95d43e3d"
 dependencies = [
  "serde",
  "serde_spanned",
@@ -1009,18 +1019,18 @@ dependencies = [
 
 [[package]]
 name = "toml_datetime"
-version = "0.6.5"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3550f4e9685620ac18a50ed434eb3aec30db8ba93b0287467bca5826ea25baf1"
+checksum = "7cda73e2f1397b1262d6dfdcef8aafae14d1de7748d66822d3bfeeb6d03e5e4b"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "toml_edit"
-version = "0.21.0"
+version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d34d383cd00a163b4a5b85053df514d45bc330f6de7737edfe0a93311d1eaa03"
+checksum = "396e4d48bbb2b7554c944bde63101b5ae446cff6ec4a24227428f15eb72ef338"
 dependencies = [
  "indexmap",
  "serde",
