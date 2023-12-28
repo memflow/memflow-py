@@ -103,7 +103,9 @@ impl PyProcess {
     }
 
     fn set_dtb(&mut self, dtb1: umem, dtb2: umem) -> PyResult<()> {
-        self.0.set_dtb(dtb1.into(), dtb2.into()).map_err(|e| PyException::new_err(format!("failed to set dtb {}", e)))
+        self.0
+            .set_dtb(dtb1.into(), dtb2.into())
+            .map_err(|e| PyException::new_err(format!("failed to set dtb {}", e)))
     }
 
     fn module_info_list(&mut self) -> PyResult<Vec<PyModuleInfo>> {
